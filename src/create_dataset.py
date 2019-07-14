@@ -1,17 +1,18 @@
 import glob
-from time import sleep
+import os
 from typing import List, Tuple
 
 import cv2
 import numpy as np
-import os
-import matplotlib.pyplot as plt
 import tqdm
+from numpy import uint8, float16
 
 SAVE_DIR: str = 'line-draw'
+MAX_SIZE: Tuple[int, int] = (160, 160)
+TARGET_SIZE: Tuple[int, int] = (128, 128)
 
 
-def make_contour_image(path: str, size: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray]:
+def make_contour_image(path: str) -> Tuple[np.ndarray, np.ndarray]:
     neiborhood24 = np.array([[1, 1, 1, 1, 1],
                              [1, 1, 1, 1, 1],
                              [1, 1, 1, 1, 1],
@@ -32,12 +33,11 @@ def make_contour_image(path: str, size: Tuple[int, int]) -> Tuple[np.ndarray, np
 
     # 白黒反転
     contour = 255 - diff
-    color: np.ndarray = np.zeros(shape=(size[0], size[1], 3), dtype=int)
+    color: np.ndarray = np.zeros(shape=(MAX_SIZE[0], MAX_SIZE[1], 3), dtype=uint8)
     color[:] = 255
     origin: np.ndarray = np.asarray(cv2.imread(path, cv2.IMREAD_COLOR))[:, :, ::-1].copy()
     color[:origin.shape[0], :origin.shape[1], :] = origin
-
-    line: np.ndarray = np.zeros_like(a=color, dtype=int)
+    line: np.ndarray = np.zeros_like(a=color, dtype=uint8)
     line[:] = 255
     line[:origin.shape[0], :origin.shape[1], 0] = contour
     line[:origin.shape[0], :origin.shape[1], 1] = contour
@@ -50,23 +50,21 @@ def make_contour_image(path: str, size: Tuple[int, int]) -> Tuple[np.ndarray, np
 
 
 if __name__ == '__main__':
-    max_size: Tuple[int, int] = (160, 160)
-    target_size: Tuple[int, int] = (128, 128)
     if not os.path.exists(SAVE_DIR):
         os.mkdir(SAVE_DIR)
     targets: List[str] = glob.glob('source-images/*.png')
     max_width: int = 0
     max_height: int = 0
     # length: int = len(targets)
-    length: int = 6000
-    x: np.ndarray = np.zeros(shape=(length, target_size[0], target_size[1], 3),
-                             dtype=float)
-    y: np.ndarray = np.zeros(shape=(length, target_size[0], target_size[1], 3),
-                             dtype=float)
+    length: int = 12000
+    x: np.ndarray = np.zeros(shape=(length, TARGET_SIZE[0], TARGET_SIZE[1], 3),
+                             dtype=float16)
+    y: np.ndarray = np.zeros(shape=(length, TARGET_SIZE[0], TARGET_SIZE[1], 3),
+                             dtype=float16)
     for idx, f in enumerate(tqdm.tqdm(targets[:length])):
-        color, line = make_contour_image(f, size=(target_size[0], max_size[1]))
-        color = np.resize(new_shape=target_size, a=color)
-        line = np.resize(new_shape=target_size, a=line)
+        color, line = make_contour_image(f)
+        color = cv2.resize(color, dsize=TARGET_SIZE)
+        line = cv2.resize(line, dsize=TARGET_SIZE)
         # plt.imshow(color)
         # plt.show()
         # sleep(0.1)
@@ -75,8 +73,10 @@ if __name__ == '__main__':
         # sleep(0.1)
         # exit()
 
-        y[idx, :, :, :] = color.astype('float32') / 255
-        x[idx, :, :, :] = line.astype('float32') / 255
+        y[idx, :, :, :] = color.astype('float16') / 255
+        x[idx, :, :, :] = line.astype('float16') / 255
 
     np.savez('data.npz', x=x, y=y)
+
+
 

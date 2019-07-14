@@ -1,3 +1,5 @@
+from time import sleep
+
 from keras import Sequential
 from numpy.lib.npyio import NpzFile
 from typing import List
@@ -17,7 +19,7 @@ def inverse(x: np.ndarray) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    data: NpzFile = np.load('/home/huna/data.npz')
+    data: NpzFile = np.load('data.npz')
     x: np.ndarray = data['x']
     y: np.ndarray = data['y']
 
@@ -36,7 +38,7 @@ if __name__ == '__main__':
         1001,
     ]
     for idx in targets:
-        p: np.ndarray = model.predict(x=x[idx:idx+1, :, :, :])
+        p: np.ndarray = model.predict(x=x[idx:idx + 1, :, :, :])
         inv: np.ndarray = inverse(x=p[0])
 
         plt.subplot(2, 2, 1)
@@ -55,3 +57,5 @@ if __name__ == '__main__':
         plt.savefig('image/{0}.png'.format(idx))
 
         plt.show()
+        sleep(0.5)
+
