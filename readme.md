@@ -102,16 +102,16 @@ activation_11 (Activation)   (None, 128, 128, 3)       0
 
 
 ### 未学習データの推論結果
-- type1
+#### type1
 ![](./md-image/myplot-test-1.png)
 
-- type2
+#### type2
 ![](./md-image/myplot-test-2.png)
 
-- type3
+#### type3
 ![](./md-image/myplot-test-3.png)
 
-- type4
+#### type4
 ![](./md-image/myplot-test-4.png)
 
 
