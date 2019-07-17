@@ -15,7 +15,7 @@ def create_model(target: np.ndarray) -> Sequential:
     ae: Sequential = Sequential()
     kernel_size: Tuple[int, int] = (3, 3)
 
-    filter_len: int = 64
+    filter_len: int = 128
     # Encoder
     ae.add(Conv2D(filter_len, (1, 1), padding='same',
                   input_shape=(target.shape[1], target.shape[2], 3)))
@@ -58,6 +58,7 @@ def create_model(target: np.ndarray) -> Sequential:
 
     ae.add(Conv2D(filter_len * 2, kernel_size, padding='same'))
     ae.add(Activation('relu'))
+    ae.add(Dropout(0.25))
     ae.add(Conv2D(filter_len * 1, kernel_size, padding='same'))
     ae.add(Activation('relu'))
     ae.add(Dropout(0.25))
@@ -79,6 +80,8 @@ if __name__ == '__main__':
     data: NpzFile = np.load('data.npz')
     x: np.ndarray = data['x']
     y: np.ndarray = data['y']
+    valid_x: np.ndarray = data['validate_x']
+    valid_y: np.ndarray = data['validate_y']
 
     epoch: int = 300
     model: Sequential = create_model(target=x)
@@ -86,8 +89,8 @@ if __name__ == '__main__':
     cp_cb: ModelCheckpoint = ModelCheckpoint(filepath=chkpt, monitor='val_loss', verbose=1, save_best_only=True,
                                              mode='auto')
 
-    stack = model.fit(x=x, y=y, epochs=epoch, verbose=1, batch_size=32,
-                      validation_split=0.12,
+    stack = model.fit(x=x, y=y, epochs=epoch, verbose=1, batch_size=16,
+                      validation_data=[valid_x, valid_y],
                       callbacks=[cp_cb])
     # callbacks=[EarlyStopping(monitor='val_loss', patience=5, verbose=1, mode='auto')])
     model.save(filepath='weight.h5')

@@ -53,30 +53,42 @@ if __name__ == '__main__':
     if not os.path.exists(SAVE_DIR):
         os.mkdir(SAVE_DIR)
     targets: List[str] = glob.glob('source-images/*.png')
+    learn_length: int = 11000
+    test_length: int = 3100
+    full_order: np.ndarray = np.arange(start=0, stop=learn_length + test_length, step=1, dtype=int)
+    np.random.seed(len(targets))
+    np.random.shuffle(full_order)
+    print('full_order[:learn_length]', full_order[:learn_length].shape)
+    learn_order: np.ndarray = full_order[:learn_length]
+    test_order: np.ndarray = full_order[learn_length:learn_length + test_length]
     max_width: int = 0
     max_height: int = 0
-    # length: int = len(targets)
-    length: int = 12000
-    x: np.ndarray = np.zeros(shape=(length, TARGET_SIZE[0], TARGET_SIZE[1], 3),
+    x: np.ndarray = np.zeros(shape=(learn_order.shape[0], TARGET_SIZE[0], TARGET_SIZE[1], 3),
                              dtype=float16)
-    y: np.ndarray = np.zeros(shape=(length, TARGET_SIZE[0], TARGET_SIZE[1], 3),
+    y: np.ndarray = np.zeros(shape=(learn_order.shape[0], TARGET_SIZE[0], TARGET_SIZE[1], 3),
                              dtype=float16)
-    for idx, f in enumerate(tqdm.tqdm(targets[:length])):
+    print('create learn data ...')
+    for counter in tqdm.trange(learn_order.shape[0]):
+        idx: int = learn_order[counter]
+        f: str = targets[idx]
         color, line = make_contour_image(f)
         color = cv2.resize(color, dsize=TARGET_SIZE)
         line = cv2.resize(line, dsize=TARGET_SIZE)
-        # plt.imshow(color)
-        # plt.show()
-        # sleep(0.1)
-        # plt.imshow(line)
-        # plt.show()
-        # sleep(0.1)
-        # exit()
+        y[counter, :, :, :] = color.astype('float16') / 255
+        x[counter, :, :, :] = line.astype('float16') / 255
 
-        y[idx, :, :, :] = color.astype('float16') / 255
-        x[idx, :, :, :] = line.astype('float16') / 255
+    print('create test data ... ')
+    validate_x: np.ndarray = np.zeros(shape=(test_order.shape[0], TARGET_SIZE[0], TARGET_SIZE[1], 3),
+                                      dtype=float16)
+    validate_y: np.ndarray = np.zeros(shape=(test_order.shape[0], TARGET_SIZE[0], TARGET_SIZE[1], 3),
+                                      dtype=float16)
+    for counter in tqdm.trange(test_order.shape[0]):
+        idx: int = test_order[counter]
+        f: str = targets[idx]
+        color, line = make_contour_image(f)
+        color = cv2.resize(color, dsize=TARGET_SIZE)
+        line = cv2.resize(line, dsize=TARGET_SIZE)
+        validate_x[counter, :, :, :] = color.astype('float16') / 255
+        validate_y[counter, :, :, :] = line.astype('float16') / 255
 
-    np.savez('data.npz', x=x, y=y)
-
-
-
+    np.savez('data.npz', x=x, y=y, validate_x=validate_x, validate_y=validate_y)
