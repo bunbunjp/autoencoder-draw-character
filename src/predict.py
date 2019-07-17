@@ -42,14 +42,26 @@ if __name__ == '__main__':
         inv: np.ndarray = inverse(x=p[0])
 
         plt.subplot(2, 2, 1)
+        plt.tick_params(labelbottom=False,
+                        labelleft=False,
+                        labelright=False,
+                        labeltop=False)
         plt.imshow(inverse(x=x[idx, :, :, :]))
         plt.title('line draw')
 
         plt.subplot(2, 2, 2)
+        plt.tick_params(labelbottom=False,
+                        labelleft=False,
+                        labelright=False,
+                        labeltop=False)
         plt.imshow(inverse(x=y[idx, :, :, :]))
         plt.title('origin')
 
         plt.subplot(2, 2, 3)
+        plt.tick_params(labelbottom=False,
+                        labelleft=False,
+                        labelright=False,
+                        labeltop=False)
         plt.imshow(inv)
         plt.title('predict')
 

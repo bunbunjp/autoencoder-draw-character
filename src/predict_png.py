@@ -13,7 +13,7 @@ from src.predict import inverse
 
 
 def main():
-    targets: List[str] = glob.glob('test_image_3/*')
+    targets: List[str] = glob.glob('test_image_4/*')
     length: int = len(targets)
     x: np.ndarray = np.zeros(shape=(length, TARGET_SIZE[0], TARGET_SIZE[1], 3),
                              dtype=float16)
